@@ -1,0 +1,414 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Countdown Timer</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, #202b50, #090d1b 65%);
+    color: white;
+}
+
+.container {
+    text-align: center;
+    padding: 45px 30px;
+    width: 90%;
+    max-width: 750px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 25px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.subtitle {
+    color: #9ca9c9;
+    letter-spacing: 5px;
+    font-size: 12px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 35px;
+    margin-bottom: 12px;
+    letter-spacing: 2px;
+}
+
+.description {
+    color: #aab5d0;
+    margin-bottom: 40px;
+}
+
+.timer {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.time-box {
+    background: linear-gradient(145deg, #202d50, #121a32);
+    border: 1px solid #35466e;
+    border-radius: 16px;
+    padding: 25px 15px;
+    min-width: 125px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+.time-box span {
+    display: block;
+    font-size: 45px;
+    font-weight: 700;
+    color: #72caff;
+    font-variant-numeric: tabular-nums;
+}
+
+.time-box p {
+    color: #9ca9c9;
+    margin-top: 8px;
+    letter-spacing: 3px;
+    font-size: 11px;
+}
+
+/* TOGGLE BUTTON */
+
+.toggle {
+    margin-top: 30px;
+}
+
+.toggle button {
+    padding: 10px 22px;
+    border: 1px solid #35466e;
+    border-radius: 25px;
+    background: #121a32;
+    color: #9ca9c9;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.3s;
+}
+
+.toggle button:hover {
+    background: #202d50;
+    color: white;
+}
+
+/* TOTAL SECONDS DISPLAY */
+
+#secondsView {
+    display: none;
+}
+
+#secondsView .time-box {
+    width: 100%;
+}
+
+#secondsView span {
+    font-size: 45px;
+    overflow-wrap: anywhere;
+}
+
+/* STATUS MESSAGE */
+
+#status {
+    display: none;
+    color: #72caff;
+    font-size: 22px;
+    font-weight: 600;
+    padding: 30px 10px;
+}
+
+.footer {
+    margin-top: 40px;
+    color: #7785a8;
+    font-size: 13px;
+    letter-spacing: 2px;
+}
+
+@media(max-width: 500px) {
+    h1 {
+        font-size: 25px;
+    }
+
+    .time-box {
+        min-width: 105px;
+        padding: 20px 10px;
+    }
+
+    .time-box span {
+        font-size: 32px;
+    }
+
+    #secondsView span {
+        font-size: 30px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="subtitle">THE COUNTDOWN BEGINS</div>
+
+    <h1>One Goal. One Deadline.</h1>
+
+    <p class="description" id="description">
+        Every second brings you closer.
+    </p>
+
+    <!-- NORMAL COUNTDOWN -->
+
+    <div class="timer" id="normalView">
+
+        <div class="time-box">
+            <span id="days">00</span>
+            <p>DAYS</p>
+        </div>
+
+        <div class="time-box">
+            <span id="hours">00</span>
+            <p>HOURS</p>
+        </div>
+
+        <div class="time-box">
+            <span id="minutes">00</span>
+            <p>MINUTES</p>
+        </div>
+
+        <div class="time-box">
+            <span id="seconds">00</span>
+            <p>SECONDS</p>
+        </div>
+
+    </div>
+
+    <!-- TOTAL SECONDS VIEW -->
+
+    <div class="timer" id="secondsView">
+
+        <div class="time-box">
+            <span id="totalSeconds">0</span>
+            <p>TOTAL SECONDS REMAINING</p>
+        </div>
+
+    </div>
+
+    <!-- TOGGLE BUTTON -->
+
+    <div class="toggle" id="toggleSection">
+
+        <button id="toggleBtn" onclick="toggleTimer()">
+            Show Total Seconds
+        </button>
+
+    </div>
+
+    <!-- STATUS MESSAGE -->
+
+    <div id="status"></div>
+
+    <div class="footer">
+        MAKE EVERY SECOND COUNT.
+    </div>
+
+</div>
+
+<script>
+
+// ======================================
+// READ DATE FROM URL QUERY PARAMETER
+// FORMAT: ?date=DDMMYYYY
+// ======================================
+
+function getTargetDate() {
+
+    const params = new URLSearchParams(window.location.search);
+
+    const dateString = params.get("date");
+
+    // Check exactly 8 digits
+
+    if (!dateString || !/^\d{8}$/.test(dateString)) {
+        return null;
+    }
+
+    // Extract DDMMYYYY
+
+    const day = Number(dateString.substring(0, 2));
+
+    const month = Number(dateString.substring(2, 4));
+
+    const year = Number(dateString.substring(4, 8));
+
+    // Basic validation
+
+    if (
+        day < 1 || day > 31 ||
+        month < 1 || month > 12 ||
+        year < 1000
+    ) {
+        return null;
+    }
+
+    // Create target date at local midnight
+
+    const target = new Date(year, month - 1, day, 0, 0, 0);
+
+    // Validate actual calendar date
+
+    if (
+        target.getDate() !== day ||
+        target.getMonth() !== month - 1 ||
+        target.getFullYear() !== year
+    ) {
+        return null;
+    }
+
+    return target.getTime();
+
+}
+
+
+// ======================================
+// INITIALIZE COUNTDOWN
+// ======================================
+
+const endTime = getTargetDate();
+
+let secondsMode = false;
+
+let countdown = null;
+
+
+// ======================================
+// INVALID OR PAST DATE HANDLING
+// ======================================
+
+if (endTime === null) {
+
+    showMessage("Invalid date format.");
+
+} else if (endTime <= Date.now()) {
+
+    showMessage("This date has already passed.");
+
+} else {
+
+    updateTimer();
+
+    countdown = setInterval(updateTimer, 1000);
+
+}
+
+
+// ======================================
+// SHOW STATUS MESSAGE
+// ======================================
+
+function showMessage(message) {
+
+    document.getElementById("normalView").style.display = "none";
+
+    document.getElementById("secondsView").style.display = "none";
+
+    document.getElementById("toggleSection").style.display = "none";
+
+    document.getElementById("description").style.display = "none";
+
+    document.getElementById("status").style.display = "block";
+
+    document.getElementById("status").textContent = message;
+
+}
+
+
+// ======================================
+// TOGGLE BETWEEN TWO MODES
+// ======================================
+
+function toggleTimer() {
+
+    secondsMode = !secondsMode;
+
+    document.getElementById("normalView").style.display =
+        secondsMode ? "none" : "flex";
+
+    document.getElementById("secondsView").style.display =
+        secondsMode ? "flex" : "none";
+
+    document.getElementById("toggleBtn").textContent =
+        secondsMode
+        ? "Show Days / Hours"
+        : "Show Total Seconds";
+
+    updateTimer();
+
+}
+
+
+// ======================================
+// COUNTDOWN CALCULATION
+// ======================================
+
+function updateTimer() {
+
+    let distance = endTime - Date.now();
+
+    if (distance <= 0) {
+
+        clearInterval(countdown);
+
+        showMessage("This date has already passed.");
+
+        return;
+
+    }
+
+    let totalSeconds = Math.floor(distance / 1000);
+
+    let days = Math.floor(totalSeconds / 86400);
+
+    let hours = Math.floor((totalSeconds % 86400) / 3600);
+
+    let minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    let seconds = totalSeconds % 60;
+
+
+    // NORMAL FOUR-CARD VIEW
+
+    document.getElementById("days").textContent = days;
+
+    document.getElementById("hours").textContent = hours;
+
+    document.getElementById("minutes").textContent = minutes;
+
+    document.getElementById("seconds").textContent = seconds;
+
+
+    // TOTAL SECONDS VIEW
+
+    document.getElementById("totalSeconds").textContent =
+        totalSeconds.toLocaleString("en-IN");
+
+}
+
+</script>
+
+</body>
+</html>

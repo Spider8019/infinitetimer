@@ -109,7 +109,7 @@ h1 {
 /* TOTAL SECONDS DISPLAY */
 
 #secondsView {
-    display: none;
+    display: flex;
 }
 
 #secondsView .time-box {
@@ -173,7 +173,7 @@ h1 {
 
     <!-- NORMAL COUNTDOWN -->
 
-    <div class="timer" id="normalView">
+    <div class="timer" id="normalView" style="display: none;">
 
         <div class="time-box">
             <span id="days">00</span>
@@ -197,7 +197,7 @@ h1 {
 
     </div>
 
-    <!-- TOTAL SECONDS VIEW -->
+    <!-- TOTAL SECONDS VIEW (DEFAULT) -->
 
     <div class="timer" id="secondsView">
 
@@ -213,7 +213,7 @@ h1 {
     <div class="toggle" id="toggleSection">
 
         <button id="toggleBtn" onclick="toggleTimer()">
-            Show Total Seconds
+            Show Days / Hours
         </button>
 
     </div>
@@ -289,6 +289,8 @@ function getTargetDate() {
 // ======================================
 
 const endTime = getTargetDate();
+
+// DEFAULT MODE: TOTAL SECONDS
 
 let secondsMode = true;
 
